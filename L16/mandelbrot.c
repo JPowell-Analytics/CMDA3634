@@ -70,9 +70,9 @@ void  mandelbrot(int Nre, int Nim, complex_t cmin, complex_t cmax, float *count)
   double di = (cmax.i-cmin.i)/(Nim-1);;
 
   // Q2c: add a compiler directive to split the outer for loop amongst threads here
-#pragma parallel for
+#pragma parallel for private(m) private(c) shared(dr) shared(di) shared(count)
   for(n=0;n<Nim;++n){
-    for(m=0;m<Nre;++m){
+     for(m=0;m<Nre;++m){
       c.r = cmin.r + dr*m;
       c.i = cmin.i + di*n;
       
