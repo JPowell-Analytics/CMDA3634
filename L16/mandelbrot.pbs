@@ -10,13 +10,10 @@ cd $PBS_O_WORKDIR
 
 module purge
 module load gcc
-
+make clean
 make
 
 for Nthreads in `seq 1 16`
 do 
-    ./mandelbrot 20 20$Nthreads;
+    ./mandelbrot 4096 4096 $Nthreads;
 done;
-
-
-
