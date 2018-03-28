@@ -127,7 +127,8 @@ void setupElGamal(unsigned int n, unsigned int *p, unsigned int *g,
   //g is the generator
   //x is the private key for each person to be able to decrypt messages
   //Rank 0 is Alice, Rank 1 is Bob
-  *p = isProbablyPrime(n); //randXbitInt(32)%n;
+  *p = randXbitInt(32) % n; //randXbitInt(32)%n;
+  *p = isProbablyPrime(*p);
   *g = findGenerator(*p);
   *x = randXbitInt(32)%*p;
   *h = modExp(*g ,*x, *p);
