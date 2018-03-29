@@ -48,7 +48,7 @@ unsigned int randXbitInt(unsigned int n) {
 unsigned int isProbablyPrime(unsigned int N) {
 
   if (N%2==0) return 0; //not interested in even numbers (including 2)
-
+  
   unsigned int NsmallPrimes = 168;
   unsigned int smallPrimeList[168] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 
                                 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 
@@ -110,36 +110,76 @@ unsigned int isProbablyPrime(unsigned int N) {
 unsigned int findGenerator(unsigned int p) {
   unsigned int g;
   unsigned int q = (p-1)/2;
-
   do {
     //make a random number 1<= g < p
     g = randXbitInt(32)%p; //could also have passed n to findGenerator
-  } while ((modExp(g,q,p)==1) || (modExp(g,2,p)==1));
+  } while ((modExp(g,q,p)==1) || (modExp(g,2,p)==1) || (g == 0));
   
   return g;
 }
 
 void setupElGamal(unsigned int n, unsigned int *p, unsigned int *g, 
                                   unsigned int *h, unsigned int *x) {
+  printf("ElGamal Setup Processing:...... \n ");
+  /* Q1.1 Setup an ElGamal cryptographic system */
+  //p is the prime number
+  //h is a number
+  //g is the generator
+  //x is the private key for each person to be able to decrypt messages
+  //Rank 0 is Alice, Rank 1 is Bob
+  *p = 0;
+  if (isProbablyPrime(*p) == 0){
+  *p = randXbitInt(n); 
+  }
+ // *p = isProbablyPrime(n);
 
-  /* Setup an ElGamal cryptographic system */
-  
+  *g = findGenerator(*p);
+  *x = randXbitInt(*p);
+  *h = modExp(*g ,*x, *p);
+  //There is something else missing I just cannot seem to figure it out. 
   printf("ElGamal Setup successful.\n");
   printf("p = %u. \n", *p);  
   printf("g = %u is a generator of Z_%u \n", *g, *p);  
   printf("Secret key: x = %u \n", *x);
   printf("h = g^x = %u\n", *h);
   printf("\n");
-}
 
+}
 void ElGamalEncrypt(unsigned int *m, unsigned int *a, 
                     unsigned int p, unsigned int g, unsigned int h) {
 
-  /* implement the encryption routine for an ElGamal cryptographic system */
-}
+  /* Q2.1 Implement the encryption routine for an ElGamal cryptographic system */
+  //m = message has to have information inputed into it.
+  //s = secret shared
+  //p = prime number
+  //g = generator
+  //h = is a number
+  //a has to have information inputed.
+  unsigned int s, y;
+  //This for loop what should y be less than, assuming it is h currently. 
+  y = randXbitInt(32)%p;
+  *a = modExp(g, y, p);
+  s = modExp(h, y, p);
+  *m = modprod(*m, s, p);
+  
+ // printf("ElGamal Encryption successful.\n");
+ /* printf("m = %u. \n", *m);
+  printf("s = h^y = g^(x*y) = %u. \n", s);
+  printf("Ciphertext: (a, m) = (g^y, m' *h^y) = (g^y, m'*g^(x*y)) = (%u, %u).\n", *a, *m);
+  printf("\n");*/
+ }
 
 void ElGamalDecrypt(unsigned int *m, unsigned int a, 
                     unsigned int p, unsigned int x) {
 
-  /* implement the decryption routine for an ElGamal cryptographic system */
-}
+  /* Q2.2 Implement the decryption routine for an ElGamal cryptographic system */
+  unsigned int s, s1, xs;
+  s = modExp(a, x, p);
+  s1 = modExp(s, p-2, p);
+  xs = modprod(x, s, p);
+  *m = modprod(*m, s1, p); //are we to assume that x is m for m* = mss^-1 ? if not what is m supposed to be?
+  //printf("ElGamal Decryption successful.\n");
+
+  //Something may be missing from here.
+  // printf("\n");
+} 
