@@ -93,14 +93,14 @@ int main (int argc, char **argv) {
   }
   /* Q2.3 Have Alice recv all the encrypted mesages 
     from Bob (rank 1) and then decrypt them */
- /* if (rank == 0)
+  if (rank == 0)
   {
       MPI_Status status;
       int tag = 1;
       int sourceRank = 1;
 
       MPI_Recv(message, Nmessages, MPI_INT, sourceRank, tag, MPI_COMM_WORLD, &status);
-  }*/
+  }
   printf("Alice's recieved messages are:  [ ");
   for (unsigned int i=0;i<Nmessages;i++) {
     printf("(%u,%u) ", message[i],a[i]);
@@ -117,11 +117,6 @@ int main (int argc, char **argv) {
   printf("]\n");
   printf("\n");
  // } 
- if (rank == 0)
-  {
-    MPI_Status status;
-    MPI_Recv(message, Nmessages, MPI_INT, 1, 1, MPI_COMM_WORLD, &status);
-  }
    MPI_Finalize();
   
   return 0;

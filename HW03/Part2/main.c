@@ -25,6 +25,7 @@ int main (int argc, char **argv) {
 
   /* Q3.1 Make rank 0 setup the ELGamal system and
     broadcast the public key information */
+  if (rank == 0){
   printf("Enter a number of bits: "); fflush(stdout);
   char status = scanf("%u",&n);
 
@@ -34,7 +35,7 @@ int main (int argc, char **argv) {
     return 0;   
   }
   printf("\n");
-
+  }
   //declare storage for an ElGamal cryptosytem
   unsigned int p, g, h, x;
 
@@ -46,15 +47,15 @@ int main (int argc, char **argv) {
       MPI_Bcast(&h, 1, MPI_INT, 0, MPI_COMM_WORLD);
   }
   //Suppose we don't know the secret key. Use all the ranks to try and find it in parallel
-  if (rank==0)
+//  if (rank==0)
     printf("Using %d processes to find the secret key...\n", size);
-
   /*Q3.2 We want to loop through values i=0 .. p-2
      determine start and end values so this loop is 
      distributed amounst the MPI ranks  */
   unsigned int N = p-1; //total loop size
   unsigned int start, end, startTime, endTime;
   startTime = MPI_Wtime();
+  if (rank == 0){
   for (int i = 0; i < N-1; i++)
   {
      int chunk = N/size;
@@ -65,9 +66,10 @@ int main (int argc, char **argv) {
      else{
          start = rank *chunk +rem; //original start = 0
      }
-     end = start + chunk; // originial end = start + N
+     end = start + N; // originial end = start + N
   }
   endTime = MPI_Wtime(); 
+ }
   //loop through the values from 'start' to 'end'
   for (unsigned int i=start;i<end;i++) {
     if (modExp(g,i+1,p)==h)
@@ -76,6 +78,7 @@ int main (int argc, char **argv) {
   printf("The total time it took to run the for loop: %u.\n", endTime - startTime);
   printf("Start time: %u.\n", startTime);
   printf("End time: %u.\n", endTime);
+    
   MPI_Finalize();
 
   return 0;
