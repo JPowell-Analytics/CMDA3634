@@ -108,7 +108,7 @@ int main(int argc, char **argv){
   float *count = (float*) malloc(Nre*Nim*sizeof(float));
   float *d_count;
   cudaMalloc(&d_count, N*sizeof(float));
-  kernalAddMatrices2D <<<G, B>>>(d_count, Nthreads, Nthreads, 1);
+  kernalMandelbrot<<<G, B>>>(d_count, count, Nthreads, Nthreads, 1);
   cudaMemcpy(count,d_count, N*sizeof(float), cudaMemcpyHostToDevice);
 
   // Parameters for a bounding box for "c" that generates an interesting image
