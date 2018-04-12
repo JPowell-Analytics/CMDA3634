@@ -9,8 +9,9 @@
 
 int main (int argc, char **argv) {
 
-  int Nthreads = atoi(argc-1);
-
+  int Nthreads;
+  Nthreads = atoi(argv[argc - 1]);
+  
   omp_set_num_threads(Nthreads);
 
 	//seed value for the randomizer 
@@ -93,12 +94,10 @@ int main (int argc, char **argv) {
  for (unsigned int i=0;i<p-1;i++) {
     if (abort != 1)
 	if (modExp(g,i+1,p)==h){
-	#pragma omp critical 
-	{
+
 	      printf("Secret key found! x = %u \n", i);
 	      abort = 1;
 	      i = p;
-	}
      }	 
   }
   double endTime = omp_get_wtime();
