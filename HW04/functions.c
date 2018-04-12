@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "functions.h"
+#include "omp.h"
 
 //compute a*b mod p safely
 unsigned int modprod(unsigned int a, unsigned int b, unsigned int p) {
@@ -152,7 +153,7 @@ void ElGamalEncrypt(unsigned int *m, unsigned int *a, unsigned int Nints,
                     unsigned int p, unsigned int g, unsigned int h) {
 
   /* Q2.1 Parallelize this function with OpenMP   */
-
+#pragma omp parallel for shared(m,a)
   for (unsigned int i=0; i<Nints;i++) {
     //pick y in Z_p randomly
     unsigned int y;
@@ -172,10 +173,10 @@ void ElGamalEncrypt(unsigned int *m, unsigned int *a, unsigned int Nints,
 }
 
 void ElGamalDecrypt(unsigned int *m, unsigned int *a, unsigned int Nints,
-                    unsigned int p, unsigned int x) {
+                   unsigned int p, unsigned int x) {
 
   /* Q2.1 Parallelize this function with OpenMP   */
-
+  #pragma omp parallel for shared(m, a)
   for (unsigned int i=0; i<Nints;i++) {
     //compute s = a^x
     unsigned int s = modExp(a[i],x,p);
@@ -187,29 +188,62 @@ void ElGamalDecrypt(unsigned int *m, unsigned int *a, unsigned int Nints,
     m[i] = modprod(m[i],invS,p);
   }
 }
-
 //Pad the end of string so its length is divisible by Nchars
 // Assume there is enough allocated storage for the padded string 
 void padString(unsigned char* string, unsigned int charsPerInt) {
-
+  unsigned int strleng = strlen(string); 
+  char padding = ' ';
+  unsigned int mod = strleng%charsPerInt;
   /* Q1.2 Complete this function   */
-
-}
+  for (int i = strleng; i < strleng+(mod + (charsPerInt-mod)); i++)
+    {
+      string[(i)] = padding;
+      string[i+1] = '\0';
+    }
+  }   
 
 
 void convertStringToZ(unsigned char *string, unsigned int Nchars,
                       unsigned int  *Z,      unsigned int Nints) {
-
+  
   /* Q1.3 Complete this function   */
+  //n&255 is a key masking part.  
+  unsigned int count = 0;
+  unsigned int charsPerInt = Nchars/Nints;
+  unsigned int c = 0;
+ #pragma omp parallel for shared(string, Z)
+  for (int i = 0; i < Nchars; i+= charsPerInt)
+  {
+  if (charsPerInt = 1)
+	Z[i/charsPerInt] = (unsigned int) string[i];
+  if (charsPerInt = 2)
+	Z[i/charsPerInt] = (unsigned int) ((string[i] * 256) + string[i+1]);
+  if (charsPerInt = 3)
+	Z[i/charsPerInt] = (unsigned int) ((string[i] * 256 * 256) + (string[i+1] * 256) + string[i+2]);
+  }    
   /* Q2.2 Parallelize this function with OpenMP   */
-
+  
 }
 
 
 void convertZToString(unsigned int  *Z,      unsigned int Nints,
                       unsigned char *string, unsigned int Nchars) {
-
+  unsigned int charsPerInt = Nchars/Nints;
+  unsigned int chr = 0xFF;
+  unsigned int b = 0;
+  unsigned int count = 0;
   /* Q1.4 Complete this function   */
+ #pragma omp parallel for shared(Z, string)
+for (int i = 0; i < Nchars; i+= charsPerInt)
+{
+  if (charsPerInt = 1)
+ 	 Z[i/charsPerInt] = (unsigned char) (Z[i] >> 16);
+  if (charsPerInt = 2)
+	 Z[i/charsPerInt] = (unsigned char) ((Z[i] << 8) >> 16);
+  if (charsPerInt = 3)
+	 Z[i/charsPerInt] = (unsigned char) ((Z[i] << 16) >> 16);
+}
+
   /* Q2.2 Parallelize this function with OpenMP   */
 
 }

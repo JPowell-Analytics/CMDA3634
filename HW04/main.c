@@ -46,7 +46,7 @@ int main (int argc, char **argv) {
   printf("Message = \"%s\"\n", message);
 
   /* Q1.1 Finish this line   */
-  unsigned int charsPerInt = ;
+  unsigned int charsPerInt = (n-1)/8; //Question about this so as to be able to answer it
 
   padString(message, charsPerInt);
   printf("Padded Message = \"%s\"\n", message);
@@ -88,10 +88,18 @@ int main (int argc, char **argv) {
 
   /* Q2.3 Parallelize this loop with OpenMP   */
   double startTime = omp_get_wtime();
-  for (unsigned int i=0;i<p-1;i++) {
-    if (modExp(g,i+1,p)==h) {
-      printf("Secret key found! x = %u \n", i);
-    } 
+  unsigned int abort = 0;
+ #pragma omp parallel for 
+ for (unsigned int i=0;i<p-1;i++) {
+    if (abort != 1)
+	if (modExp(g,i+1,p)==h){
+	#pragma omp critical 
+	{
+	      printf("Secret key found! x = %u \n", i);
+	      abort = 1;
+	      i = p;
+	}
+     }	 
   }
   double endTime = omp_get_wtime();
 
