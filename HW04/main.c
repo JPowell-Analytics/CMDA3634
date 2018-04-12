@@ -9,7 +9,7 @@
 
 int main (int argc, char **argv) {
 
-  int Nthreads = atoi(argv[1]);
+  int Nthreads = atoi(argc-1);
 
   omp_set_num_threads(Nthreads);
 
@@ -23,9 +23,9 @@ int main (int argc, char **argv) {
   unsigned int p, g, h, x;
 
   //begin with rank 0 getting user's input
-	unsigned int n;
+	unsigned int n = 20;
 
-  printf("Enter a number of bits: "); fflush(stdout);
+ // printf("Enter a number of bits: "); fflush(stdout);
   char status = scanf("%u",&n);
 
   //make sure the input makes sense

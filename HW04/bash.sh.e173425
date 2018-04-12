@@ -1,0 +1,7 @@
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 14: 121510 Segmentation fault      ./main 1
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 15: 121511 Segmentation fault      ./main 2
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 16: 121512 Segmentation fault      ./main 4
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 17: 121513 Segmentation fault      ./main 8
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 18: 121514 Segmentation fault      ./main 12
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 19: 121515 Segmentation fault      ./main 16
+/opt/torque/torque/spool/mom_priv/jobs/173425.master.cluster.SC: line 20: 121516 Segmentation fault      ./main 20
