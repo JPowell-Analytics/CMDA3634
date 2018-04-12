@@ -17,7 +17,7 @@ make
 ./main 8;
 ./main 12;
 ./main 16;
-./main 20 ;
+./main 20;
 
 
 
