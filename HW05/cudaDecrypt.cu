@@ -24,8 +24,8 @@ __device__ unsigned int modExpCuda(unsigned int a, unsigned int b, unsigned int 
   unsigned int aExpb = 1;
 
   while (b > 0) {
-    if (b%2 == 1) aExpb = modprod(aExpb, z, p);
-    z = modprod(z, z, p);
+    if (b%2 == 1) aExpb = modprodCuda(aExpb, z, p);
+    z = modprodCuda(z, z, p);
     b /= 2;
   }
   return aExpb;
@@ -42,8 +42,8 @@ blockId = blockIdx.x;
 Nblock = blockDim.x;
 unsigned  int id = threadId + Nblock*blockId;
 if (id < p-1){
-	if (modExp(g, id, p) == h)
-    		d_x = id;
+	if (modExpCuda(g, id, p) == h)
+    		device_array[0] = id;
 }
 
 //convert this to only 1 if statement.
@@ -79,9 +79,9 @@ int main (int argc, char **argv) {
   unsigned int Nints;
 
   //get the secret key from the user
-  printf("Enter the secret key (0 if unknown): "); fflush(stdout);
+/*  printf("Enter the secret key (0 if unknown): "); fflush(stdout);
   char stat = scanf("%u",&x);
-
+*/
   printf("Reading file.\n");
   
 
@@ -125,14 +125,10 @@ int main (int argc, char **argv) {
   dim3 out((p+Nthreads-1)/Nthreads, 1, 1);
   cudaMalloc(&device_array, Nthreads*sizeof(unsigned int)); 
   
-  size_t inputMem = 2*Nthreads*sizeof(unsigned int);//missing a number
-  size_t outMem = Nthreads*sizeof(unsigned int);//missing a number  
-
-  
   kernalFindKey<<<out, in>>> (p, g, h, device_array);
   cudaDeviceSynchronize();
   cudaMemCpy(host_array, device_array, Nthreads*sizeof(unsigned int), cudaMemcpyDeviceToHost);
-  unsigned int x* = host_array;
+  x = host_array;
   cudaFree(device_array);
 
   free(host_array);
