@@ -7,12 +7,45 @@
 #include "cuda.h"
 #include "functions.c"
 
-__global__ void kernalFindKey(int N, int n, int g, int h, int p){
+__device__ unsigned int modprodCuda(unsigned int a, unsigned int b, unsigned int p) {
+  unsigned int za = a;
+  unsigned int ab = 0;
+
+  while (b > 0) {
+    if (b%2 == 1) ab = (ab +  za) % p;
+    za = (2 * za) % p;
+    b /= 2;
+  }
+  return ab;
+}
+
+__device__ unsigned int modExpCuda(unsigned int a, unsigned int b, unsigned int p) {
+  unsigned int z = a;
+  unsigned int aExpb = 1;
+
+  while (b > 0) {
+    if (b%2 == 1) aExpb = modprod(aExpb, z, p);
+    z = modprod(z, z, p);
+    b /= 2;
+  }
+  return aExpb;
+}
+
+__global__ void kernalFindKey(int p, int g, int h, int device_array){
 /*int nthreads = modExp(2,n,p);
 int blockid = //No clue as to what this would be however need help;
 int Nblock = nthreads/1024;*/
-if (modExp(g, blockIdx.x + 1, p) == h)
-    d_x = blockIdx.x + 1;
+
+unsigned int d_x, threadId, blockId, Nblock;
+threadId = threadIdx.x;
+blockId = blockIdx.x;
+Nblock = blockDim.x;
+unsigned  int id = threadId + Nblock*blockId;
+if (id < p-1){
+	if (modExp(g, id, p) == h)
+    		d_x = id;
+}
+
 //convert this to only 1 if statement.
 /*if (x==0 || modExp(g,x,p)!=h) {
     printf("Finding the secret key...\n");
@@ -41,7 +74,7 @@ int main (int argc, char **argv) {
   /* Q4 Make the search for the secret key parallel on the GPU using CUDA. */
 
 //declare storage for an ElGamal cryptosytem
-  unsigned int N = atoi(argv[1]);
+  //unsigned int N = atoi(argv[1]);
   unsigned int n, p, g, h, x;
   unsigned int Nints;
 
@@ -67,47 +100,8 @@ int main (int argc, char **argv) {
   h = data_key[3];
   printf("%u, %u, %u, %u\n", n,p,g,h);
     // find the secret key
-  
-  //Idea is to make host storage so as to pass info to the device storage.
-  unsigned int h_a, h_b, h_c;
-  h_n = (unsigned int *) malloc(N*sizeof(unsigned int));
-  h_g = (unsigned int *) malloc(N*sizeof(unsigned int));
-  h_p = (unsigned int *) malloc(N*sizeof(unsigned int));  
-  h_h = (unsigned int *) malloc(N*sizeof(unsigned int));
 
-
-  size_t inputMem = 2* *sizeof(double);//missing a number
-  size_t outMem = *sizeof(double);//missing a number  
-
-  unsigned int d_n, d_g, d_h, d_p;
-  cudaMalloc(&d_n, N*sizeof(unsigned int));
-  cudaMalloc(&d_g, N*sizeof(unsigned int)); 
-  cudaMalloc(&d_p, N*sizeof(unsigned int));
-  cudaMalloc(&d_h, N*sizeof(unsigned int));
-
-  cudaMemcpy(d_n, h_n, N*sizeof(unsigned int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_g, h_g, N*sizeof(unsigned int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_p, h_p, N*sizeof(unsigned int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_h, h_h, N*sizeof(unsigned int), cudaMemcpyHostToDevice);
- 
-  unsigned int Nthreads = modExp(2, N, p);
-  unsigned int Nblocks = Nthreads/1024;
-  unsigned int x;
-  x = kernalFindKey<<<Nblocks, Nthreads>>> (N, d_n, d_g, d_p, d_h);
-  cudaDeviceSynchronize();
-  
-  cudaFree(d_n);
-  cudaFree(d_g);
-  cudaFree(d_p);
-  cudaFree(d_h);
-
-  free(h_n);
-  free(h_g);
-  free(h_p);
-  free(h_h);
-
-  /* Q3 After finding the secret key, decrypt the message */
-  FILE* message = fopen("message.txt" , "r"); 
+ FILE* message = fopen("message.txt" , "r"); 
   unsigned int *m_array , *a_array;
   fscanf(message, "%u", &Nints);
   printf("Nints is %u\n", Nints);
@@ -121,14 +115,35 @@ int main (int argc, char **argv) {
   for (unsigned int k = 0; k < Nints; k++)
   {
 	fscanf(message, "%u %u", m_array+k, a_array+k);
-        
-        printf("%u is m\n", m_array[k]);
-        printf("%u is a\n", a_array[k]);
   }
-  fclose(message);  
+  fclose(message);
+
+  unsigned int Nthreads = 32;
+  unsigned int *device_array, *host_array;
+  host_array = (unsigned int *) malloc(Nthreads*sizeof(unsigned int));
+  dim3 in(Nthreads, 1, 1);
+  dim3 out((p+Nthreads-1)/Nthreads, 1, 1);
+  cudaMalloc(&device_array, Nthreads*sizeof(unsigned int)); 
+  
+  size_t inputMem = 2*Nthreads*sizeof(unsigned int);//missing a number
+  size_t outMem = Nthreads*sizeof(unsigned int);//missing a number  
+
+  
+  kernalFindKey<<<out, in>>> (p, g, h, device_array);
+  cudaDeviceSynchronize();
+  cudaMemCpy(host_array, device_array, Nthreads*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+  unsigned int x* = host_array;
+  cudaFree(device_array);
+
+  free(host_array);
+  
+  /* Q3 After finding the secret key, decrypt the message */
+  
+  
   int bufferSize = 1024;
   unsigned char *message2 = (unsigned char*) malloc(bufferSize*sizeof(unsigned char));
   unsigned int Nchars = ((n-1)/8) * Nints;
+
   ElGamalDecrypt(m_array, a_array, Nints, p, x);
   convertZToString(m_array, Nints, message2, Nchars);
   printf("Decrypted Message = \"%s\"\n", message2);
