@@ -23,7 +23,7 @@ int main (int argc, char **argv) {
     and the cyphertexts from messages.txt. */
 
   /* Q3 After finding the secret key, decrypt the message */
-  FILE* Pkey = fopen("bonus_public_key.txt", "r");
+  FILE* Pkey = fopen("public_key.txt", "r");
   unsigned int *data_key = (unsigned int*) malloc(4*sizeof(unsigned int));
 
   for (unsigned int i = 0; i < 4; i++)
@@ -54,7 +54,7 @@ int main (int argc, char **argv) {
     printf("Searching all keys took %g seconds, throughput was %g values tested per second.\n", totalTime, throughput);
   }
   /* Q3 After finding the secret key, decrypt the message */
-  FILE* message = fopen("bonus_message.txt" , "r"); 
+  FILE* message = fopen("message.txt" , "r"); 
   unsigned int *m_array , *a_array;
   fscanf(message, "%u", &Nints);
 
