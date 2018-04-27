@@ -128,7 +128,7 @@ int main (int argc, char **argv) {
   kernalFindKey<<<out, in>>> (p, g, h, device_array);
   cudaDeviceSynchronize();
   cudaMemCpy(host_array, device_array, Nthreads*sizeof(unsigned int), cudaMemcpyDeviceToHost);
-  x = host_array;
+  x = host_array[0];
   cudaFree(device_array);
 
   free(host_array);
