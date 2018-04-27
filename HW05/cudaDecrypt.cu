@@ -43,7 +43,7 @@ Nblock = blockDim.x;
 unsigned  int id = threadId + Nblock*blockId;
 if (id < p-1){
 	if (modExpCuda(g, id, p) == h)
-    		*device_array = id;
+    		device_array[0] = id;
 }
 
 //convert this to only 1 if statement.
