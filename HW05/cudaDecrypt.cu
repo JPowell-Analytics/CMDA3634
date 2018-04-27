@@ -31,12 +31,12 @@ __device__ unsigned int modExpCuda(unsigned int a, unsigned int b, unsigned int 
   return aExpb;
 }
 
-__global__ void kernalFindKey(int p, int g, int h, int device_array){
+__global__ void kernalFindKey(unsigned int p, unsigned int g,unsigned int h, unsigned int *device_array){
 /*int nthreads = modExp(2,n,p);
 int blockid = //No clue as to what this would be however need help;
 int Nblock = nthreads/1024;*/
 
-unsigned int d_x, threadId, blockId, Nblock;
+unsigned int  threadId, blockId, Nblock;
 threadId = threadIdx.x;
 blockId = blockIdx.x;
 Nblock = blockDim.x;
@@ -127,7 +127,7 @@ int main (int argc, char **argv) {
   
   kernalFindKey<<<out, in>>> (p, g, h, device_array);
   cudaDeviceSynchronize();
-  cudaMemCpy(host_array, device_array, Nthreads*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+  cudaMemcpy(host_array, device_array, Nthreads*sizeof(unsigned int), cudaMemcpyDeviceToHost);
   x = host_array[0];
   cudaFree(device_array);
 
